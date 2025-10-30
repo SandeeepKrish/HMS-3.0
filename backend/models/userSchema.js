@@ -7,29 +7,32 @@ const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: [true, "First Name Is Required!"],
-    minLength: [3, "First Name Must Contain At Least 3 Characters!"],
+    minlength: [3, "First Name Must Contain At Least 3 Characters!"],
   },
   lastName: {
     type: String,
     required: [true, "Last Name Is Required!"],
-    minLength: [3, "Last Name Must Contain At Least 3 Characters!"],
+    minlength: [3, "Last Name Must Contain At Least 3 Characters!"],
   },
   email: {
     type: String,
     required: [true, "Email Is Required!"],
     validate: [validator.isEmail, "Provide A Valid Email!"],
+    unique: true,
+    lowercase: true,
   },
   phone: {
     type: String,
     required: [true, "Phone Is Required!"],
-    minLength: [10, "Phone Number Must Contain Exact 10 Digits!"],
-    maxLength: [10, "Phone Number Must Contain Exact 10 Digits!"],
+    minlength: [10, "Phone Number Must Contain Exact 10 Digits!"],
+    maxlength: [10, "Phone Number Must Contain Exact 10 Digits!"],
   },
+  // DID stored as Number now
   did: {
-    type: String,
+    type: Number,
     required: [true, "DID Is Required!"],
-    minLength: [1, "DID atleast Contain Only 1 Digits!"],
-    maxLength: [3, "DID Must Contain Only 3 Digits!"],
+    min: [0, "DID must be a positive number!"],
+    // optionally max: add based on your needs, e.g. max: [999, "DID must be <= 999"]
   },
   dob: {
     type: Date,
@@ -43,7 +46,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Password Is Required!"],
-    minLength: [8, "Password Must Contain At Least 8 Characters!"],
+    minlength: [8, "Password Must Contain At Least 8 Characters!"],
     select: false,
   },
   role: {
@@ -51,7 +54,7 @@ const userSchema = new mongoose.Schema({
     required: [true, "User Role Required!"],
     enum: ["Patient", "Doctor", "Admin"],
   },
-  doctorDepartment:{
+  doctorDepartment: {
     type: String,
   },
   docAvatar: {
@@ -60,11 +63,11 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// pre-save password hashing (ensure return next())
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
 userSchema.methods.comparePassword = async function (enteredPassword) {

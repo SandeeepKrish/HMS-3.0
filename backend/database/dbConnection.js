@@ -4,7 +4,7 @@ import chalk from "chalk";
 export const dbConnection = async () => {
   try {
     if (!process.env.MONGO_URI) {
-      throw new Error(chalk.red.bold("❌ MongoDB URI is missing from .env file"));
+      throw new Error(chalk.red.bold(" MongoDB URI is missing from .env file"));
     }
 
     await mongoose.connect(process.env.MONGO_URI, {

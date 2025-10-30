@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../main";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { GoCheckCircleFill } from "react-icons/go";
@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const { isAuthenticated, admin } = useContext(Context);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAppointmentsAndDoctors = async () => {
@@ -36,6 +37,19 @@ const Dashboard = () => {
 
     fetchAppointmentsAndDoctors();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.get("http://localhost:4001/api/v1/user/logout", {
+        withCredentials: true,
+      });
+      localStorage.removeItem("adminToken");
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (err) {
+      toast.error("Logout failed");
+    }
+  };
 
   const toBase64 = async (url) => {
     const res = await fetch(url);
@@ -111,7 +125,6 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Razorpay payment handler
   const handlePayment = async (appointment) => {
     try {
       const { data } = await axios.post(
@@ -121,7 +134,7 @@ const Dashboard = () => {
       );
 
       const options = {
-        key: "RAZORPAY_KEY_ID", // 🔁 Replace this with your actual Razorpay Key ID
+        key: "RAZORPAY_KEY_ID", // Replace with real key
         amount: data.order.amount,
         currency: "INR",
         name: "Life Line Hospital",
@@ -130,7 +143,6 @@ const Dashboard = () => {
         order_id: data.order.id,
         handler: function (response) {
           toast.success("Payment Successful!");
-          // Optional: You can update appointment payment status here
         },
         prefill: {
           name: `${appointment.firstName} ${appointment.lastName}`,
@@ -161,19 +173,25 @@ const Dashboard = () => {
           <img src="/doc.png" alt="docImg" />
           <div className="content">
             <div>
-              <p>Hello ,</p>
+              <p>Hello , ADMIN</p>
               <h5>{admin && `${admin.firstName} ${admin.lastName}`}</h5>
             </div>
             <p>A patient is the most important visitor in our premises.</p>
           </div>
         </div>
+
         <div className="secondBox">
           <p>Total Appointments</p>
           <h3>{appointments.length}</h3>
         </div>
+
         <div className="thirdBox">
           <p>Registered Doctors</p>
           <h3>{doctors.length}</h3>
+        </div>
+
+        <div className="logoutBox">
+          
         </div>
       </div>
 

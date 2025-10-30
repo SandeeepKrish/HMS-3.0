@@ -5,22 +5,24 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Context } from "../main";
 
+// ✅ Read from .env (defined in frontend/.env)
+const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || "/dashboard";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4001";
+
 const Navbar = () => {
   const [show, setShow] = useState(false);
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
 
   const handleLogout = async () => {
-    await axios
-      .get("http://localhost:4001/api/v1/user/patient/logout", {
+    try {
+      const res = await axios.get(`${API_BASE}/api/v1/user/patient/logout`, {
         withCredentials: true,
-      })
-      .then((res) => {
-        toast.success(res.data.message);
-        setIsAuthenticated(false);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
       });
+      toast.success(res.data.message);
+      setIsAuthenticated(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Logout failed");
+    }
   };
 
   const navigateTo = useNavigate();
@@ -51,9 +53,9 @@ const Navbar = () => {
 
           {/* Button Group (Dashboard + Login/Logout) */}
           <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            {/* Dashboard Button */}
+            {/* ✅ Dynamic Dashboard URL */}
             <a
-              href="http://localhost:5174"
+              href={DASHBOARD_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{

@@ -9,6 +9,22 @@
 body {
   background: rgba(73, 210, 169, 0.949);
 }
+.btn {
+  padding: 10px 35px;
+  color: #fff;
+  font-weight: 700;
+  width: fit-content;
+  border: none;
+  border-radius: 8px;
+  font-size: 24px;
+  margin-bottom: 30px;
+  background: linear-gradient(140deg, #9083d5, #271776ca);
+}
+
+.btn:hover {
+  background-color: #f91818;
+}
+
 .delete-btn {
   background-color: #ff4d4d;
   color: white;

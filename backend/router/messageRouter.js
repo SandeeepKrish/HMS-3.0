@@ -1,12 +1,18 @@
 import express from "express";
+import { isAuthenticated, isAuthorized } from "../middlewares/auth.js"; // ✅ Updated import
 import {
-  getAllMessages,
   sendMessage,
+  getAllMessages,
+  deleteMessage,
 } from "../controller/messageController.js";
-import { isAdminAuthenticated } from "../middlewares/auth.js";
+
 const router = express.Router();
 
-router.post("/send", sendMessage);
-router.get("/getall", isAdminAuthenticated, getAllMessages);
+// Only authenticated users can send messages
+router.post("/send", isAuthenticated, sendMessage);
+
+// Only Admin can access all messages and delete them
+router.get("/getall", isAuthenticated, isAuthorized("Admin"), getAllMessages);
+router.delete("/delete/:id", isAuthenticated, isAuthorized("Admin"), deleteMessage);
 
 export default router;
