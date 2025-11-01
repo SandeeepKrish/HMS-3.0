@@ -1,10 +1,10 @@
 import React, { useContext, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home.jsx";
-import Appointment from "./pages/Appointment.jsx";
-import AboutUs from "./pages/AboutUs.jsx";
-import Register from "./pages/Register.jsx";
+import Home from "./Pages/Home.jsx";
+import Appointment from "./Pages/Appointment.jsx";
+import AboutUs from "./Pages/AboutUs.jsx";
+import Register from "./Pages/Register.jsx";
 import Footer from "./components/Footer.jsx";
 import Navbar from "./components/Navbar.jsx";
 import { ToastContainer } from "react-toastify";
