@@ -28,9 +28,13 @@ console.log("FRONTEND_URL_ONE:", process.env.FRONTEND_URL_ONE);
 console.log("FRONTEND_URL_TWO:", process.env.FRONTEND_URL_TWO);
 
 // Build allowed origins array from env vars (skip empty values)
+
+const FALLBACK_FRONTEND_URL_ONE = "https://hmsfjmu.netlify.app";
+const FALLBACK_FRONTEND_URL_TWO = "https://hmsjm.netlify.app";
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL_ONE,
-  process.env.FRONTEND_URL_TWO,
+  process.env.FRONTEND_URL_ONE || FALLBACK_FRONTEND_URL_ONE,
+  process.env.FRONTEND_URL_TWO || FALLBACK_FRONTEND_URL_TWO,
 ].filter(Boolean);
 
 console.log("Allowed Origins:", allowedOrigins);
