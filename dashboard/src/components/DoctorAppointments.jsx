@@ -163,6 +163,6 @@ const DoctorAppointments = () => {
       </button>
     </section>
   );
-};cd
+};
 
 export default DoctorAppointments;
