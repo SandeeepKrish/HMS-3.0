@@ -1,8 +1,9 @@
+// dashboard/src/components/AddNewDoctor.jsx
 import React, { useContext, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Context } from "../main";
-import axios from "axios";
+import api from "../lib/api";
 
 const AddNewDoctor = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
@@ -16,7 +17,7 @@ const AddNewDoctor = () => {
   const [gender, setGender] = useState("");
   const [password, setPassword] = useState("");
   const [doctorDepartment, setDoctorDepartment] = useState("");
-  const [docAvatar, setDocAvatar] = useState("");
+  const [docAvatar, setDocAvatar] = useState(null);
   const [docAvatarPreview, setDocAvatarPreview] = useState("");
 
   const navigateTo = useNavigate();
@@ -75,16 +76,12 @@ const AddNewDoctor = () => {
       formData.append("gender", gender);
       formData.append("doctorDepartment", doctorDepartment);
       formData.append("docAvatar", docAvatar);
-      formData.append("role", "Doctor"); // ✅ Added required role field
+      formData.append("role", "Doctor");
 
-      const { data } = await axios.post(
-        "http://localhost:4001/api/v1/user/doctor/addnew",
-        formData,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const { data } = await api.post("/user/doctor/addnew", formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       toast.success(data.message);
       setIsAuthenticated(true);
@@ -100,10 +97,11 @@ const AddNewDoctor = () => {
       setGender("");
       setPassword("");
       setDoctorDepartment("");
-      setDocAvatar("");
+      setDocAvatar(null);
       setDocAvatarPreview("");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      console.error("AddNewDoctor error:", error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
     }
   };
 

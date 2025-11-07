@@ -1,5 +1,6 @@
+// dashboard/src/components/DoctorAppointments.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../lib/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { GoCheckCircleFill } from "react-icons/go";
@@ -17,22 +18,24 @@ const DoctorAppointments = () => {
 
     const fetchDoctorData = async () => {
       try {
-        const res = await axios.get("http://localhost:4001/api/v1/user/doctor/me", {
+        const res = await api.get("/user/doctor/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setDoctor(res.data.doctor);
       } catch (error) {
+        console.error("fetchDoctorData error:", error);
         toast.error("Failed to fetch doctor profile");
       }
     };
 
     const fetchDoctorAppointments = async () => {
       try {
-        const res = await axios.get("http://localhost:4001/api/v1/appointment/doctor", {
+        const res = await api.get("/appointment/doctor", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setAppointments(res.data.appointments);
+        setAppointments(res.data.appointments || []);
       } catch (error) {
+        console.error("fetchDoctorAppointments error:", error);
         toast.error("Failed to fetch doctor appointments");
       }
     };
@@ -81,15 +84,14 @@ const DoctorAppointments = () => {
 
   const handleLogout = async () => {
     try {
-      // Optional: Uncomment this if your backend has a logout route
-      // await axios.get("http://localhost:4001/api/v1/user/doctor/logout", {
-      //   headers: { Authorization: `Bearer ${localStorage.getItem("doctorToken")}` },
-      // });
+      // If your backend supports a doctor logout route, you can call it here (optional)
+      // await api.get("/user/doctor/logout", { headers: { Authorization: `Bearer ${localStorage.getItem("doctorToken")}` } });
 
       localStorage.removeItem("doctorToken");
       toast.success("Doctor logged out successfully!");
-      navigate("/login",{replace:true});
+      navigate("/login", { replace: true });
     } catch (error) {
+      console.error("doctor logout error:", error);
       toast.error("Logout failed. Try again.");
     }
   };
@@ -157,9 +159,8 @@ const DoctorAppointments = () => {
       </div>
 
       <button className="btn" onClick={handleLogout}>
-  Logout
-</button>
-
+        Logout
+      </button>
     </section>
   );
 };

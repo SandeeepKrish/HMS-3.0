@@ -1,3 +1,4 @@
+// dashboard/src/components/Sidebar.jsx
 import React, { useContext, useState } from "react";
 import { TiHome } from "react-icons/ti";
 import { RiLogoutBoxFill } from "react-icons/ri";
@@ -6,7 +7,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { FaUserDoctor } from "react-icons/fa6";
 import { MdAddModerator } from "react-icons/md";
 import { IoPersonAddSharp } from "react-icons/io5";
-import axios from "axios";
+import api from "../lib/api";
 import { toast } from "react-toastify";
 import { Context } from "../main";
 import { useNavigate } from "react-router-dom";
@@ -17,17 +18,14 @@ const Sidebar = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
 
   const handleLogout = async () => {
-    await axios
-      .get("http://localhost:4001/api/v1/user/admin/logout", {
-        withCredentials: true,
-      })
-      .then((res) => {
-        toast.success(res.data.message);
-        setIsAuthenticated(false);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      });
+    try {
+      const res = await api.get("/user/admin/logout", { withCredentials: true });
+      toast.success(res.data.message);
+      setIsAuthenticated(false);
+    } catch (err) {
+      console.error("admin logout error:", err);
+      toast.error(err?.response?.data?.message || "Logout failed");
+    }
   };
 
   const navigateTo = useNavigate();

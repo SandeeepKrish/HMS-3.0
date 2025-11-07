@@ -1,8 +1,9 @@
+// dashboard/src/components/AddNewAdmin.jsx
 import React, { useContext, useState } from "react";
 import { Context } from "../main";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
+import api from "../lib/api";
 
 const AddNewAdmin = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
@@ -21,30 +22,26 @@ const AddNewAdmin = () => {
   const handleAddNewAdmin = async (e) => {
     e.preventDefault();
     try {
-      await axios
-        .post(
-          "http://localhost:4001/api/v1/user/admin/addnew",
-          { firstName, lastName, email, phone, Aid, dob, gender, password },
-          {
-            withCredentials: true,
-            headers: { "Content-Type": "application/json" },
-          }
-        )
-        .then((res) => {
-          toast.success(res.data.message);
-          setIsAuthenticated(true);
-          navigateTo("/");
-          setFirstName("");
-          setLastName("");
-          setEmail("");
-          setPhone("");
-          setNic("");
-          setDob("");
-          setGender("");
-          setPassword("");
-        });
+      const res = await api.post(
+        "/user/admin/addnew",
+        { firstName, lastName, email, phone, Aid, dob, gender, password },
+        { withCredentials: true }
+      );
+
+      toast.success(res.data.message);
+      setIsAuthenticated(true);
+      navigateTo("/");
+      setFirstName("");
+      setLastName("");
+      setEmail("");
+      setPhone("");
+      setNic("");
+      setDob("");
+      setGender("");
+      setPassword("");
     } catch (error) {
-      toast.error(error.response.data.message);
+      console.error("AddNewAdmin error:", error);
+      toast.error(error?.response?.data?.message || "Failed to add admin");
     }
   };
 
@@ -55,7 +52,7 @@ const AddNewAdmin = () => {
   return (
     <section className="page">
       <section className="container form-component add-admin-form">
-      <img src="/lifelogo.jpg" alt="logo" className="logo"/>
+        <img src="/lifelogo.jpg" alt="logo" className="logo" />
         <h1 className="form-title">ADD NEW ADMIN</h1>
         <form onSubmit={handleAddNewAdmin}>
           <div>
