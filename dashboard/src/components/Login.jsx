@@ -31,7 +31,7 @@ const Login = () => {
       // use the api instance (baseURL already has /api/v1)
       const res = await api.post("/user/login", {
         email,
-        password,  
+        password,
         role,
       });
 
