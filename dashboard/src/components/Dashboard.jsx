@@ -191,7 +191,7 @@ const Dashboard = () => {
         </div>
 
         <div className="logoutBox">
-          
+
         </div>
       </div>
 
@@ -224,8 +224,8 @@ const Dashboard = () => {
                         appointment.status === "Pending"
                           ? "value-pending"
                           : appointment.status === "Accepted"
-                          ? "value-accepted"
-                          : "value-rejected"
+                            ? "value-accepted"
+                            : "value-rejected"
                       }
                       value={appointment.status}
                       onChange={(e) =>

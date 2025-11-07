@@ -1,5 +1,6 @@
-import axios from "axios";
+// dashboard/src/components/Messages.jsx
 import React, { useContext, useEffect, useState } from "react";
+import api from "../lib/api";
 import { toast } from "react-toastify";
 import { Context } from "../main";
 import { Navigate } from "react-router-dom";
@@ -10,13 +11,11 @@ const Messages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const { data } = await axios.get(
-          "http://localhost:4001/api/v1/message/getall",
-          { withCredentials: true }
-        );
-        setMessages(data.messages);
+        const { data } = await api.get("/message/getall", { withCredentials: true });
+        setMessages(data.messages || []);
       } catch (error) {
-        console.log(error.response.data.message);
+        console.error("fetchMessages error:", error);
+        toast.error(error?.response?.data?.message || "Failed to fetch messages");
       }
     };
     fetchMessages();
