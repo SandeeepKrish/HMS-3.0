@@ -36,7 +36,10 @@ const allowedOrigins = [
   process.env.FRONTEND_URL_TWO || FALLBACK_FRONTEND_URL_TWO,
   "http://localhost:5173",
   "http://localhost:5174",
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map(url => url.replace(/\/$/, "")); // remove trailing slash if any
+
 
 console.log("Allowed Origins:", allowedOrigins);
 
