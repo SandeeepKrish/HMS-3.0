@@ -14,41 +14,56 @@ import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const [show, setShow] = useState(false);
-
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
+  const navigateTo = useNavigate();
+
+  const clearLocalAuth = () => {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("doctorToken");
+    localStorage.removeItem("patientToken");
+  };
 
   const handleLogout = async () => {
     try {
-      const res = await api.get("/user/admin/logout", { withCredentials: true });
-      toast.success(res.data.message);
+      // Try admin-specific logout first
+      await api.get("/user/admin/logout", { withCredentials: true });
+    } catch (errAdmin) {
+      // If admin logout fails (404/401/etc), try generic logout endpoint
+      try {
+        await api.get("/user/logout", { withCredentials: true });
+      } catch (errGeneric) {
+        // If both fail, still proceed to clear local state — backend might have expired session
+        console.warn("Both logout endpoints failed:", errAdmin, errGeneric);
+      }
+    } finally {
+      clearLocalAuth();
       setIsAuthenticated(false);
-    } catch (err) {
-      console.error("admin logout error:", err);
-      toast.error(err?.response?.data?.message || "Logout failed");
+      toast.success("Logged out");
+      // close menu and navigate to login
+      setShow(false);
+      navigateTo("/login");
     }
   };
 
-  const navigateTo = useNavigate();
-
   const gotoHomePage = () => {
     navigateTo("/");
-    setShow(!show);
+    setShow(false);
   };
   const gotoDoctorsPage = () => {
     navigateTo("/doctors");
-    setShow(!show);
+    setShow(false);
   };
   const gotoMessagesPage = () => {
     navigateTo("/messages");
-    setShow(!show);
+    setShow(false);
   };
   const gotoAddNewDoctor = () => {
     navigateTo("/doctor/addnew");
-    setShow(!show);
+    setShow(false);
   };
   const gotoAddNewAdmin = () => {
     navigateTo("/admin/addnew");
-    setShow(!show);
+    setShow(false);
   };
 
   return (
