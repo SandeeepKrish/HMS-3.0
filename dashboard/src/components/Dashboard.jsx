@@ -1,7 +1,8 @@
+// dashboard/src/components/Dashboard.jsx
 import React, { useContext, useEffect, useState } from "react";
 import { Context } from "../main";
 import { Navigate, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../lib/api"; // <-- use api wrapper
 import { toast } from "react-toastify";
 import { GoCheckCircleFill } from "react-icons/go";
 import { AiFillCloseCircle } from "react-icons/ai";
@@ -18,17 +19,14 @@ const Dashboard = () => {
     const fetchAppointmentsAndDoctors = async () => {
       try {
         const [appointmentRes, doctorRes] = await Promise.all([
-          axios.get("http://localhost:4001/api/v1/appointment/getall", {
-            withCredentials: true,
-          }),
-          axios.get("http://localhost:4001/api/v1/user/doctors", {
-            withCredentials: true,
-          }),
+          api.get("/appointment/getall", { withCredentials: true }),
+          api.get("/user/doctors", { withCredentials: true }),
         ]);
 
-        setAppointments(appointmentRes.data.appointments);
-        setDoctors(doctorRes.data.doctors);
+        setAppointments(appointmentRes.data.appointments || []);
+        setDoctors(doctorRes.data.doctors || []);
       } catch (error) {
+        console.error("fetchAppointmentsAndDoctors error:", error);
         setAppointments([]);
         setDoctors([]);
         toast.error("Failed to fetch data");
@@ -40,13 +38,12 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.get("http://localhost:4001/api/v1/user/logout", {
-        withCredentials: true,
-      });
+      await api.get("/user/logout", { withCredentials: true });
       localStorage.removeItem("adminToken");
       toast.success("Logged out successfully");
       navigate("/login");
     } catch (err) {
+      console.error("logout error:", err);
       toast.error("Logout failed");
     }
   };
@@ -106,8 +103,8 @@ const Dashboard = () => {
 
   const handleUpdateStatus = async (appointmentId, newStatus) => {
     try {
-      await axios.put(
-        `http://localhost:4001/api/v1/appointment/update/${appointmentId}`,
+      await api.put(
+        `/appointment/update/${appointmentId}`,
         { status: newStatus },
         { withCredentials: true }
       );
@@ -120,21 +117,17 @@ const Dashboard = () => {
 
       toast.success("Status updated successfully");
     } catch (error) {
-      console.error(error);
+      console.error("handleUpdateStatus error:", error);
       toast.error("Failed to update status");
     }
   };
 
   const handlePayment = async (appointment) => {
     try {
-      const { data } = await axios.post(
-        "http://localhost:4001/api/v1/payment/create-order",
-        {},
-        { withCredentials: true }
-      );
+      const { data } = await api.post("/payment/create-order", {}, { withCredentials: true });
 
       const options = {
-        key: "RAZORPAY_KEY_ID", // Replace with real key
+        key: "RAZORPAY_KEY_ID", // Replace with real key or inject via env to frontend if needed
         amount: data.order.amount,
         currency: "INR",
         name: "Life Line Hospital",
@@ -157,7 +150,7 @@ const Dashboard = () => {
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (error) {
-      console.error(error);
+      console.error("handlePayment error:", error);
       toast.error("Payment Failed!");
     }
   };
@@ -191,7 +184,7 @@ const Dashboard = () => {
         </div>
 
         <div className="logoutBox">
-          
+          {/* optional logout button UI can go here */}
         </div>
       </div>
 
