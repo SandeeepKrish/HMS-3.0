@@ -75,8 +75,8 @@ const Login = () => {
       <h2>Sign In</h2>
       <p>Please login to continue</p>
       <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat culpa
-        voluptas expedita itaque ex, totam ad quod error?
+
+        A patient is the most important visitor in our premises.
       </p>
 
       <form onSubmit={handleLogin}>
