@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
+import cors from "cors";
 
 import messageRouter from "./router/messageRouter.js";
 import userRouter from "./router/userRouter.js";
@@ -16,74 +17,69 @@ import { errorMiddleware } from "./middlewares/error.js";
 
 const app = express();
 
-// Load environment variables from backend/.env (use process.cwd() so it's stable)
+// ===================== ENV SETUP =====================
 const envPath = path.resolve(process.cwd(), ".env");
 dotenv.config({ path: envPath });
 
-// Helpful debug: show that env loaded (remove or reduce in production)
 console.log("Loaded ENV file:", envPath);
-console.log("NODE ENV:", process.env.DEV_MODE || process.env.NODE_ENV);
-console.log("FRONTEND_URL_ONE (env):", process.env.FRONTEND_URL_ONE);
-console.log("FRONTEND_URL_TWO (env):", process.env.FRONTEND_URL_TWO);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("FRONTEND_URL_ONE:", process.env.FRONTEND_URL_ONE);
+console.log("FRONTEND_URL_TWO:", process.env.FRONTEND_URL_TWO);
 
-// FALLBACK values — your deployed Netlify sites.
-// These are only fallbacks; preferred is to set the env vars on Render.
+// ===================== FRONTEND ORIGINS =====================
+const normalize = (url) => {
+  if (!url) return url;
+  try {
+    return url.replace(/\/+$/, ""); // remove trailing slashes
+  } catch {
+    return url;
+  }
+};
+
+// Fallbacks if environment variables missing
 const FALLBACK_FRONTEND_URL_ONE = "https://hmsfjmu.netlify.app";
 const FALLBACK_FRONTEND_URL_TWO = "https://hmsjm.netlify.app";
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL_ONE || FALLBACK_FRONTEND_URL_ONE,
-  process.env.FRONTEND_URL_TWO || FALLBACK_FRONTEND_URL_TWO,
+  normalize(process.env.FRONTEND_URL_ONE || FALLBACK_FRONTEND_URL_ONE),
+  normalize(process.env.FRONTEND_URL_TWO || FALLBACK_FRONTEND_URL_TWO),
   "http://localhost:5173",
   "http://localhost:5174",
-]
-  .filter(Boolean)
-  .map(url => url.replace(/\/$/, "")); // remove trailing slash if any
+].filter(Boolean);
 
+console.log("Allowed Origins (normalized):", allowedOrigins);
 
-console.log("Allowed Origins:", allowedOrigins);
+// ===================== CORS CONFIG =====================
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow non-browser tools (curl, Postman) which send no Origin
+      if (!origin) return callback(null, true);
 
-// Strict CORS middleware that handles preflight and sets proper headers
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  // Allow non-browser tools (curl, Postman)
-  if (!origin) {
-    return next();
-  }
+      const normalizedOrigin = origin.replace(/\/+$/, "");
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
 
-  if (allowedOrigins.includes(origin)) {
-    // echo the origin back (cannot use '*' when credentials are true)
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    // Tell caches to vary by Origin
-    res.setHeader("Vary", "Origin");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With, Accept"
-    );
+      console.error("Blocked by CORS:", origin);
+      return callback(new Error("Not allowed by CORS"));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true, // allow cookies
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    exposedHeaders: ["set-cookie"],
+  })
+);
 
-    // Preflight: respond quickly
-    if (req.method === "OPTIONS") {
-      return res.status(204).end();
-    }
-  } else {
-    console.error("Blocked by CORS:", origin);
-    return res.status(403).json({ message: "Not allowed by CORS" });
-  }
+// Always respond to OPTIONS preflight quickly
+app.options("*", cors());
 
-  next();
-});
-
-// Basic health route (useful to test that the service is reachable)
+// ===================== BASIC HEALTH ROUTE =====================
 app.get("/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });
 });
 
-// standard middleware / parsers
+// ===================== CORE MIDDLEWARES =====================
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -94,17 +90,17 @@ app.use(
   })
 );
 
-// Routes
+// ===================== ROUTES =====================
 app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/appointment", appointmentRouter);
 app.use("/api/v1/pdf", pdfRouter);
 app.use("/api/v1/payment", paymentRouter);
 
-// Error Handling Middleware
+// ===================== ERROR HANDLER =====================
 app.use(errorMiddleware);
 
-// Database
+// ===================== DATABASE CONNECTION =====================
 dbConnection();
 
 export default app;
